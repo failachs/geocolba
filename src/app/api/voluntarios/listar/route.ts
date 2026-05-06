@@ -1,129 +1,148 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Client } from 'pg';
+import { Pool } from 'pg';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-function getClient() {
-  const connectionString = process.env.VOLUNTARIOS_DATABASE_URL;
+const connectionString =
+  process.env.VOLUNTARIOS_DATABASE_URL || process.env.DATABASE_URL;
 
+const pool = new Pool({
+  connectionString,
+  ssl: connectionString?.includes('railway')
+    ? { rejectUnauthorized: false }
+    : undefined,
+});
+
+function limpiarTexto(value: unknown): string {
+  return String(value ?? '').trim();
+}
+
+function normalizarFiltro(value: unknown): string {
+  return limpiarTexto(value).toLowerCase();
+}
+
+export async function GET(request: NextRequest) {
   if (!connectionString) {
-    throw new Error('Falta configurar VOLUNTARIOS_DATABASE_URL.');
+    return NextResponse.json(
+      {
+        ok: false,
+        error: 'Falta configurar VOLUNTARIOS_DATABASE_URL o DATABASE_URL.',
+      },
+      { status: 500 }
+    );
   }
 
-  return new Client({
-    connectionString,
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  });
-}
-
-function limpiarTexto(value: string | null) {
-  return String(value || '').trim();
-}
-
-export async function GET(req: NextRequest) {
-  let client: Client | null = null;
+  const client = await pool.connect();
 
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = new URL(request.url);
 
     const page = Math.max(Number(searchParams.get('page') || 1), 1);
-    const limit = Math.min(Math.max(Number(searchParams.get('limit') || 15), 1), 5000);
+    const limit = Math.min(
+      Math.max(Number(searchParams.get('limit') || 50), 1),
+      5000
+    );
     const offset = (page - 1) * limit;
 
-    const search = limpiarTexto(searchParams.get('search'));
-    const municipio = limpiarTexto(searchParams.get('municipio'));
-    const departamento = limpiarTexto(searchParams.get('departamento'));
-    const asignado = limpiarTexto(searchParams.get('asignado'));
-    const voto = limpiarTexto(searchParams.get('voto'));
-
-    client = getClient();
-    await client.connect();
+    const search = normalizarFiltro(searchParams.get('search'));
+    const municipio = normalizarFiltro(searchParams.get('municipio'));
+    const departamento = normalizarFiltro(searchParams.get('departamento'));
+    const asignado = normalizarFiltro(searchParams.get('asignado'));
+    const estado = normalizarFiltro(searchParams.get('estado'));
+    const voto = limpiarTexto(searchParams.get('voto')).toUpperCase();
 
     const where: string[] = [];
-    const params: unknown[] = [];
+    const values: unknown[] = [];
+
+    const addValue = (value: unknown) => {
+      values.push(value);
+      return `$${values.length}`;
+    };
 
     if (search) {
-      params.push(`%${search}%`);
+      const p = addValue(`%${search}%`);
+
       where.push(`
         (
-          cedula ILIKE $${params.length}
-          OR nombre_completo ILIKE $${params.length}
-          OR nombres_completos ILIKE $${params.length}
-          OR apellidos_completos ILIKE $${params.length}
-          OR barrio ILIKE $${params.length}
-          OR municipio ILIKE $${params.length}
-          OR departamento ILIKE $${params.length}
-          OR telefono_1 ILIKE $${params.length}
-          OR telefono_2 ILIKE $${params.length}
-          OR correo ILIKE $${params.length}
+          LOWER(COALESCE(cedula, '')) LIKE ${p}
+          OR LOWER(COALESCE(nombres_completos, '')) LIKE ${p}
+          OR LOWER(COALESCE(apellidos_completos, '')) LIKE ${p}
+          OR LOWER(COALESCE(nombre_completo, '')) LIKE ${p}
+          OR LOWER(COALESCE(direccion, '')) LIKE ${p}
+          OR LOWER(COALESCE(barrio, '')) LIKE ${p}
+          OR LOWER(COALESCE(municipio, '')) LIKE ${p}
+          OR LOWER(COALESCE(departamento, '')) LIKE ${p}
+          OR LOWER(COALESCE(telefono_1, '')) LIKE ${p}
+          OR LOWER(COALESCE(telefono_2, '')) LIKE ${p}
+          OR LOWER(COALESCE(correo, '')) LIKE ${p}
+          OR LOWER(COALESCE(asignado, '')) LIKE ${p}
+          OR LOWER(COALESCE(estado, '')) LIKE ${p}
         )
       `);
     }
 
-    if (municipio && municipio !== 'todos' && municipio !== 'Todos los municipios') {
-      params.push(municipio);
-      where.push(`municipio = $${params.length}`);
+    if (municipio && municipio !== 'todos') {
+      const p = addValue(`%${municipio}%`);
+      where.push(`LOWER(COALESCE(municipio, '')) LIKE ${p}`);
     }
 
-    if (departamento && departamento !== 'todos' && departamento !== 'Todos los departamentos') {
-      params.push(departamento);
-      where.push(`departamento = $${params.length}`);
+    if (departamento && departamento !== 'todos') {
+      const p = addValue(`%${departamento}%`);
+      where.push(`LOWER(COALESCE(departamento, '')) LIKE ${p}`);
     }
 
-    if (asignado && asignado !== 'todos' && asignado !== 'Todos los roles') {
-      if (asignado === 'lider') {
-        where.push(`LOWER(COALESCE(asignado, '')) LIKE '%lider%'`);
-      }
-
-      if (asignado === 'voluntario') {
-        where.push(`LOWER(COALESCE(asignado, '')) NOT LIKE '%lider%'`);
-      }
+    if (asignado && asignado !== 'todos') {
+      const p = addValue(`%${asignado}%`);
+      where.push(`LOWER(COALESCE(asignado, '')) LIKE ${p}`);
     }
 
-    if (voto && voto !== 'todos') {
-      if (voto === 'VOTÓ') {
-        where.push(`
-          (
-            LOWER(COALESCE(estado, '')) LIKE '%vot%'
-            OR LOWER(COALESCE(estado, '')) LIKE '%confirmado%'
-            OR LOWER(COALESCE(estado, '')) LIKE '%si%'
-          )
-          AND LOWER(COALESCE(estado, '')) NOT LIKE '%no%'
-        `);
-      }
-
-      if (voto === 'NO VOTÓ') {
-        where.push(`
-          (
-            LOWER(COALESCE(estado, '')) LIKE '%no%'
-            OR LOWER(COALESCE(estado, '')) LIKE '%pendiente%'
-            OR COALESCE(estado, '') = ''
-          )
-        `);
-      }
+    if (estado && estado !== 'todos') {
+      const p = addValue(`%${estado}%`);
+      where.push(`LOWER(COALESCE(estado, '')) LIKE ${p}`);
     }
 
-    const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+    if (voto === 'VOTÓ' || voto === 'VOTO' || voto === 'SI' || voto === 'SÍ') {
+      where.push(`
+        (
+          UPPER(COALESCE(estado, '')) LIKE '%VOTÓ%'
+          OR UPPER(COALESCE(estado, '')) LIKE '%VOTO%'
+          OR UPPER(COALESCE(estado, '')) LIKE '%SI%'
+          OR UPPER(COALESCE(estado, '')) LIKE '%SÍ%'
+        )
+      `);
+    }
 
-    const totalQuery = await client.query(
+    if (voto === 'NO VOTÓ' || voto === 'NO VOTO') {
+      where.push(`
+        (
+          UPPER(COALESCE(estado, '')) LIKE '%NO VOTÓ%'
+          OR UPPER(COALESCE(estado, '')) LIKE '%NO VOTO%'
+          OR UPPER(COALESCE(estado, '')) LIKE '%PENDIENTE%'
+          OR COALESCE(estado, '') = ''
+        )
+      `);
+    }
+
+    const whereSQL = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
+
+    const totalResult = await client.query(
       `
       SELECT COUNT(*)::int AS total
       FROM public.voluntarios
-      ${whereSql};
+      ${whereSQL}
       `,
-      params
+      values
     );
 
-    const total = Number(totalQuery.rows[0]?.total || 0);
+    const total = Number(totalResult.rows[0]?.total || 0);
     const totalPages = Math.max(Math.ceil(total / limit), 1);
 
-    const dataParams = [...params, limit, offset];
-    const limitIndex = dataParams.length - 1;
-    const offsetIndex = dataParams.length;
+    const dataValues = [...values, limit, offset];
+    const limitParam = `$${dataValues.length - 1}`;
+    const offsetParam = `$${dataValues.length}`;
 
-    const dataQuery = await client.query(
+    const dataResult = await client.query(
       `
       SELECT
         id AS uid,
@@ -141,98 +160,98 @@ export async function GET(req: NextRequest) {
         telefono_2,
         correo,
         estado,
-        fecha_cargue
+        NULL::text AS fecha_cargue
       FROM public.voluntarios
-      ${whereSql}
-      ORDER BY uid ASC
-      LIMIT $${limitIndex}
-      OFFSET $${offsetIndex};
+      ${whereSQL}
+      ORDER BY id DESC
+      LIMIT ${limitParam}
+      OFFSET ${offsetParam}
       `,
-      dataParams
+      dataValues
     );
 
-    const statsQuery = await client.query(`
+    const statsResult = await client.query(`
       SELECT
         COUNT(*)::int AS total,
-
         COUNT(*) FILTER (
           WHERE LOWER(COALESCE(asignado, '')) LIKE '%lider%'
+             OR LOWER(COALESCE(asignado, '')) LIKE '%líder%'
         )::int AS lideres,
-
         COUNT(*) FILTER (
-          WHERE LOWER(COALESCE(asignado, '')) NOT LIKE '%lider%'
+          WHERE LOWER(COALESCE(asignado, '')) LIKE '%voluntario%'
         )::int AS voluntarios,
-
         COUNT(*) FILTER (
-          WHERE (
-            LOWER(COALESCE(estado, '')) LIKE '%vot%'
-            OR LOWER(COALESCE(estado, '')) LIKE '%confirmado%'
-            OR LOWER(COALESCE(estado, '')) LIKE '%si%'
-          )
-          AND LOWER(COALESCE(estado, '')) NOT LIKE '%no%'
+          WHERE UPPER(COALESCE(estado, '')) LIKE '%VOTÓ%'
+             OR UPPER(COALESCE(estado, '')) LIKE '%VOTO%'
+             OR UPPER(COALESCE(estado, '')) LIKE '%SI%'
+             OR UPPER(COALESCE(estado, '')) LIKE '%SÍ%'
         )::int AS votaron,
-
         COUNT(*) FILTER (
-          WHERE (
-            LOWER(COALESCE(estado, '')) LIKE '%no%'
-            OR LOWER(COALESCE(estado, '')) LIKE '%pendiente%'
-            OR COALESCE(estado, '') = ''
-          )
+          WHERE UPPER(COALESCE(estado, '')) LIKE '%NO VOTÓ%'
+             OR UPPER(COALESCE(estado, '')) LIKE '%NO VOTO%'
+             OR UPPER(COALESCE(estado, '')) LIKE '%PENDIENTE%'
+             OR COALESCE(estado, '') = ''
         )::int AS no_votaron,
-
-        COUNT(DISTINCT municipio)::int AS municipios
-      FROM public.voluntarios;
+        COUNT(DISTINCT NULLIF(TRIM(COALESCE(municipio, '')), ''))::int AS municipios
+      FROM public.voluntarios
     `);
 
-    const municipiosQuery = await client.query(`
-      SELECT municipio, COUNT(*)::int AS cantidad
+    const municipiosResult = await client.query(`
+      SELECT
+        municipio,
+        COUNT(*)::int AS cantidad
       FROM public.voluntarios
-      WHERE municipio IS NOT NULL 
-        AND TRIM(municipio) <> ''
+      WHERE NULLIF(TRIM(COALESCE(municipio, '')), '') IS NOT NULL
       GROUP BY municipio
-      ORDER BY municipio ASC;
+      ORDER BY municipio ASC
     `);
 
-    const departamentosQuery = await client.query(`
-      SELECT departamento, COUNT(*)::int AS cantidad
+    const departamentosResult = await client.query(`
+      SELECT
+        departamento,
+        COUNT(*)::int AS cantidad
       FROM public.voluntarios
-      WHERE departamento IS NOT NULL 
-        AND TRIM(departamento) <> ''
+      WHERE NULLIF(TRIM(COALESCE(departamento, '')), '') IS NOT NULL
       GROUP BY departamento
-      ORDER BY departamento ASC;
+      ORDER BY departamento ASC
     `);
 
     return NextResponse.json({
       ok: true,
-      data: dataQuery.rows,
+      data: dataResult.rows,
       pagination: {
         page,
         limit,
         total,
         totalPages,
       },
-      stats: statsQuery.rows[0],
+      stats: statsResult.rows[0] || {
+        total: 0,
+        lideres: 0,
+        voluntarios: 0,
+        votaron: 0,
+        no_votaron: 0,
+        municipios: 0,
+      },
       filtros: {
-        municipios: municipiosQuery.rows,
-        departamentos: departamentosQuery.rows,
+        municipios: municipiosResult.rows,
+        departamentos: departamentosResult.rows,
       },
     });
   } catch (error) {
     console.error('[api/voluntarios/listar]', error);
 
-    const message =
-      error instanceof Error ? error.message : 'Error consultando voluntarios.';
-
     return NextResponse.json(
       {
         ok: false,
-        error: message,
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Error consultando voluntarios.',
       },
       { status: 500 }
     );
   } finally {
-    if (client) {
-      await client.end().catch(() => null);
-    }
+    client.release();
   }
 }
