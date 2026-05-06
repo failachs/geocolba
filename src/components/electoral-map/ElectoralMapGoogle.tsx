@@ -40,6 +40,12 @@ const CAT_COLORS: Record<string, string> = {
   pendiente: '#6b7280',
 };
 
+const MAP_TYPE_LABELS: Record<'roadmap' | 'satellite' | 'hybrid', string> = {
+  roadmap: 'Mapa',
+  satellite: 'Satélite',
+  hybrid: 'Híbrido',
+};
+
 function makePinDiv(color: string, selected: boolean): HTMLElement {
   const size = selected ? 28 : 20;
   const border = selected ? 2.5 : 2;
@@ -825,7 +831,7 @@ export default function ElectoralMapGoogle() {
 
         {/* Tipo de mapa */}
         <div className={styles.mapTypeBtns}>
-          {(['roadmap', 'satellite', 'hybrid'] as MapType[]).map((t) => (
+          {(['roadmap', 'satellite', 'hybrid'] as const).map((t) => (
             <button
               key={t}
               type="button"
@@ -834,11 +840,7 @@ export default function ElectoralMapGoogle() {
               }`}
               onClick={() => changeMapType(t)}
             >
-              {{
-                roadmap: 'Mapa',
-                satellite: 'Satélite',
-                hybrid: 'Híbrido',
-              }[t]}
+              {MAP_TYPE_LABELS[t]}
             </button>
           ))}
         </div>
