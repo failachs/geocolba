@@ -126,7 +126,7 @@ export async function GET(req: NextRequest) {
     const dataQuery = await client.query(
       `
       SELECT
-        uid,
+        id AS uid,
         id,
         cedula,
         asignado,

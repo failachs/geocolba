@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     const result = await client.query(
       `
       SELECT 
-        uid,
+        id AS uid,
         id,
         cedula,
         nombre_completo,
