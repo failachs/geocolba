@@ -20,6 +20,7 @@ import {
   cargarMunicipiosDesdeBD,
 } from '@/data/mockElectoralPoints';
 import MarkerInfoPanel from './MarkerInfoPanel';
+import MapSearchBox from './MapSearchBox';
 import StreetViewPanel from './StreetViewPanel';
 import styles from './ElectoralMapGoogle.module.css';
 
@@ -45,6 +46,22 @@ const MAP_TYPE_LABELS: Record<'roadmap' | 'satellite' | 'hybrid', string> = {
   satellite: 'Satélite',
   hybrid: 'Híbrido',
 };
+
+const DEFAULT_FILTERS: MapFilters = {
+  categoria: 'todos',
+  municipio: 'todos',
+  estadoContacto: 'todos',
+  lider: 'todos',
+  requiereTransporte: null,
+};
+
+const FALLBACK_EXPLORE: ExploreItem[] = [
+  { id: 'f1', title: 'Centro histórico' },
+  { id: 'f2', title: 'Parque principal' },
+  { id: 'f3', title: 'Centro comercial' },
+  { id: 'f4', title: 'Zona residencial' },
+  { id: 'f5', title: 'Avenida principal' },
+];
 
 function makePinDiv(color: string, selected: boolean): HTMLElement {
   const size = selected ? 28 : 20;
@@ -117,22 +134,6 @@ function PegmanIcon() {
   );
 }
 
-const DEFAULT_FILTERS: MapFilters = {
-  categoria: 'todos',
-  municipio: 'todos',
-  estadoContacto: 'todos',
-  lider: 'todos',
-  requiereTransporte: null,
-};
-
-const FALLBACK_EXPLORE: ExploreItem[] = [
-  { id: 'f1', title: 'Centro histórico' },
-  { id: 'f2', title: 'Parque principal' },
-  { id: 'f3', title: 'Centro comercial' },
-  { id: 'f4', title: 'Zona residencial' },
-  { id: 'f5', title: 'Avenida principal' },
-];
-
 export default function ElectoralMapGoogle() {
   const mapDivRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -142,6 +143,7 @@ export default function ElectoralMapGoogle() {
   const placesRef = useRef<google.maps.places.PlacesService | null>(null);
   const markersRef = useRef<Map<string, AdvMarker>>(new Map());
   const clustererRef = useRef<any>(null);
+  const vsMarkersRef = useRef<any[]>([]);
 
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -383,10 +385,10 @@ export default function ElectoralMapGoogle() {
 
   const handleClosePanel = useCallback(() => {
     if (selectedPoint) {
-      const m = markersRef.current.get(selectedPoint.id);
+      const marker = markersRef.current.get(selectedPoint.id);
 
-      if (m) {
-        m.content = makePinDiv(
+      if (marker) {
+        marker.content = makePinDiv(
           CAT_COLORS[selectedPoint.categoria] || '#6b7280',
           false
         );
@@ -397,6 +399,41 @@ export default function ElectoralMapGoogle() {
     closeSV();
   }, [selectedPoint, closeSV]);
 
+  const handleSearchSelect = useCallback(
+    (point: ElectoralPoint) => {
+      if (selectedPoint) {
+        const prev = markersRef.current.get(selectedPoint.id);
+
+        if (prev) {
+          prev.content = makePinDiv(
+            CAT_COLORS[selectedPoint.categoria] || '#6b7280',
+            false
+          );
+        }
+      }
+
+      const marker = markersRef.current.get(point.id);
+
+      if (marker) {
+        marker.content = makePinDiv(CAT_COLORS[point.categoria] || '#6b7280', true);
+      }
+
+      setSelectedPoint(point);
+
+      if (mapRef.current) {
+        mapRef.current.panTo({
+          lat: point.lat,
+          lng: point.lng,
+        });
+
+        if ((mapRef.current.getZoom() ?? 0) < 14) {
+          mapRef.current.setZoom(14);
+        }
+      }
+    },
+    [selectedPoint]
+  );
+
   useEffect(() => {
     async function cargarDatosDesdeBD() {
       try {
@@ -404,9 +441,7 @@ export default function ElectoralMapGoogle() {
         setDataError(null);
 
         const [pointsDesdeBD, municipiosDesdeBD] = await Promise.all([
-          cargarElectoralPointsDesdeBD({
-            limit: 5000,
-          }),
+          cargarElectoralPointsDesdeBD({ limit: 5000 }),
           cargarMunicipiosDesdeBD(),
         ]);
 
@@ -486,13 +521,13 @@ export default function ElectoralMapGoogle() {
         svServiceRef.current = new google.maps.StreetViewService();
         placesRef.current = new google.maps.places.PlacesService(map);
 
-        const ov = new google.maps.OverlayView();
+        const overlay = new google.maps.OverlayView();
 
-        ov.onAdd = () => {};
-        ov.draw = () => {};
-        ov.onRemove = () => {};
-        ov.setMap(map);
-        overlayRef.current = ov;
+        overlay.onAdd = () => {};
+        overlay.draw = () => {};
+        overlay.onRemove = () => {};
+        overlay.setMap(map);
+        overlayRef.current = overlay;
 
         const pano = map.getStreetView();
 
@@ -523,12 +558,12 @@ export default function ElectoralMapGoogle() {
         });
 
         map.addListener('center_changed', () => {
-          const c = map.getCenter();
+          const center = map.getCenter();
 
-          if (c) {
+          if (center) {
             setCoords({
-              lat: c.lat(),
-              lng: c.lng(),
+              lat: center.lat(),
+              lng: center.lng(),
             });
           }
         });
@@ -542,8 +577,8 @@ export default function ElectoralMapGoogle() {
         setIsLoaded(true);
         setTimeout(loadExploreItems, 800);
       })
-      .catch((err) => {
-        setLoadError(`Error al cargar Google Maps: ${err.message}`);
+      .catch((error) => {
+        setLoadError(`Error al cargar Google Maps: ${error.message}`);
       });
 
     return () => {
@@ -558,11 +593,17 @@ export default function ElectoralMapGoogle() {
     const run = async () => {
       clustererRef.current?.clearMarkers();
 
-      markersRef.current.forEach((m) => {
-        m.map = null;
+      markersRef.current.forEach((marker) => {
+        marker.map = null;
       });
 
       markersRef.current.clear();
+
+      vsMarkersRef.current.forEach((marker) => {
+        marker.map = null;
+      });
+
+      vsMarkersRef.current = [];
 
       const newMarkers: AdvMarker[] = [];
 
@@ -608,9 +649,9 @@ export default function ElectoralMapGoogle() {
     handleMarkerClick,
   ]);
 
-  const changeMapType = useCallback((type: MapType) => {
+  const changeMapType = useCallback((type: 'roadmap' | 'satellite' | 'hybrid') => {
     mapRef.current?.setMapTypeId(type);
-    setMapType(type);
+    setMapType(type as MapType);
   }, []);
 
   if (loadError) {
@@ -627,15 +668,7 @@ export default function ElectoralMapGoogle() {
 
   return (
     <div className={styles.mapContainer}>
-      {/* ── Barra de controles ───────────────────────────────── */}
       <div className={styles.mapTopbar}>
-        <div className={styles.pointsChip}>
-          <span className={dataError ? styles.statusDotRed : styles.statusDotGreen} />
-          <strong>{filteredPoints.length}</strong>
-          <span>/ {points.length} puntos</span>
-        </div>
-
-        {/* Agregar */}
         <button
           className={styles.addBtn}
           type="button"
@@ -656,14 +689,13 @@ export default function ElectoralMapGoogle() {
           Agregar
         </button>
 
-        {/* Filtros */}
         <div className={styles.filterWrapper}>
           <button
             className={`${styles.filterBtn} ${
               hasActiveFilters ? styles.filterBtnActive : ''
             }`}
             type="button"
-            onClick={() => setFilterOpen((v) => !v)}
+            onClick={() => setFilterOpen((value) => !value)}
           >
             <svg
               width="12"
@@ -685,33 +717,41 @@ export default function ElectoralMapGoogle() {
                 <label className={styles.filterLabel}>Categoría</label>
 
                 <div className={styles.categoryList}>
-                  {(['todos', 'lider', 'voluntario', 'pendiente'] as const).map(
-                    (cat) => (
-                      <button
-                        key={cat}
-                        className={`${styles.catChip} ${
-                          filters.categoria === cat ? styles.catChipActive : ''
-                        }`}
-                        onClick={() =>
-                          setFilters((f) => ({
-                            ...f,
-                            categoria: cat,
-                          }))
-                        }
-                      >
-                        <span
-                          className={styles.catDot}
-                          style={{
-                            background:
-                              cat === 'todos'
-                                ? '#6b7280'
-                                : MARKER_STYLES[cat].color,
-                          }}
-                        />
-                        {CATEGORY_LABELS[cat]}
-                      </button>
-                    )
-                  )}
+                  {(
+                    [
+                      'todos',
+                      'lider',
+                      'votante',
+                      'voluntario',
+                      'punto_votacion',
+                      'casa_visitada',
+                      'pendiente',
+                    ] as const
+                  ).map((cat) => (
+                    <button
+                      key={cat}
+                      className={`${styles.catChip} ${
+                        filters.categoria === cat ? styles.catChipActive : ''
+                      }`}
+                      onClick={() =>
+                        setFilters((current) => ({
+                          ...current,
+                          categoria: cat,
+                        }))
+                      }
+                    >
+                      <span
+                        className={styles.catDot}
+                        style={{
+                          background:
+                            cat === 'todos'
+                              ? '#6b7280'
+                              : MARKER_STYLES[cat].color,
+                        }}
+                      />
+                      {CATEGORY_LABELS[cat]}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -721,16 +761,18 @@ export default function ElectoralMapGoogle() {
                 <select
                   className={styles.filterSelect}
                   value={filters.municipio}
-                  onChange={(e) =>
-                    setFilters((f) => ({
-                      ...f,
-                      municipio: e.target.value,
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      municipio: event.target.value,
                     }))
                   }
                 >
-                  {municipios.map((m) => (
-                    <option key={m} value={m}>
-                      {m === 'todos' ? 'Todos los municipios' : m}
+                  {municipios.map((municipio) => (
+                    <option key={municipio} value={municipio}>
+                      {municipio === 'todos'
+                        ? 'Todos los municipios'
+                        : municipio}
                     </option>
                   ))}
                 </select>
@@ -742,16 +784,16 @@ export default function ElectoralMapGoogle() {
                 <select
                   className={styles.filterSelect}
                   value={filters.estadoContacto}
-                  onChange={(e) =>
-                    setFilters((f) => ({
-                      ...f,
-                      estadoContacto: e.target.value as any,
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      estadoContacto: event.target.value as any,
                     }))
                   }
                 >
-                  {Object.entries(STATUS_LABELS).map(([k, v]) => (
-                    <option key={k} value={k}>
-                      {v}
+                  {Object.entries(STATUS_LABELS).map(([key, value]) => (
+                    <option key={key} value={key}>
+                      {value}
                     </option>
                   ))}
                 </select>
@@ -763,16 +805,16 @@ export default function ElectoralMapGoogle() {
                 <select
                   className={styles.filterSelect}
                   value={filters.lider}
-                  onChange={(e) =>
-                    setFilters((f) => ({
-                      ...f,
-                      lider: e.target.value,
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      lider: event.target.value,
                     }))
                   }
                 >
-                  {lideres.map((l) => (
-                    <option key={l} value={l}>
-                      {l === 'todos' ? 'Todos los líderes' : l}
+                  {lideres.map((lider) => (
+                    <option key={lider} value={lider}>
+                      {lider === 'todos' ? 'Todos los líderes' : lider}
                     </option>
                   ))}
                 </select>
@@ -802,13 +844,12 @@ export default function ElectoralMapGoogle() {
 
         <div className={styles.topbarDivider} />
 
-        {/* Clustering */}
         <button
           className={`${styles.clusterToggle} ${
             clustering ? styles.clusterToggleOn : ''
           }`}
           type="button"
-          onClick={() => setClustering((v) => !v)}
+          onClick={() => setClustering((value) => !value)}
         >
           <svg
             width="12"
@@ -829,24 +870,22 @@ export default function ElectoralMapGoogle() {
 
         <div className={styles.topbarDivider} />
 
-        {/* Tipo de mapa */}
         <div className={styles.mapTypeBtns}>
-          {(['roadmap', 'satellite', 'hybrid'] as const).map((t) => (
+          {(['roadmap', 'satellite', 'hybrid'] as const).map((type) => (
             <button
-              key={t}
+              key={type}
               type="button"
               className={`${styles.mapTypeBtn} ${
-                mapType === t ? styles.mapTypeBtnActive : ''
+                mapType === type ? styles.mapTypeBtnActive : ''
               }`}
-              onClick={() => changeMapType(t)}
+              onClick={() => changeMapType(type)}
             >
-              {MAP_TYPE_LABELS[t]}
+              {MAP_TYPE_LABELS[type]}
             </button>
           ))}
         </div>
       </div>
 
-      {/* ── Área del mapa ───────────────────────────────────── */}
       <div className={styles.mapArea}>
         {(!isLoaded || dataLoading) && (
           <div className={styles.loadingOverlay}>
@@ -871,7 +910,12 @@ export default function ElectoralMapGoogle() {
 
         <div ref={mapDivRef} className={styles.mapDiv} />
 
-        {/* Panel de detalle — overlay flotante */}
+        <MapSearchBox
+          points={filteredPoints}
+          total={points.length}
+          onSelect={handleSearchSelect}
+        />
+
         <MarkerInfoPanel
           point={selectedPoint}
           onClose={handleClosePanel}
@@ -888,7 +932,6 @@ export default function ElectoralMapGoogle() {
           />
         )}
 
-        {/* Bandeja Explorar + Pegman */}
         {!isDragging && (
           <div
             className={`${styles.exploreDock} ${
@@ -909,7 +952,7 @@ export default function ElectoralMapGoogle() {
               <button
                 className={styles.exploreTitleButton}
                 type="button"
-                onClick={() => setExploreOpen((v) => !v)}
+                onClick={() => setExploreOpen((value) => !value)}
                 aria-expanded={exploreOpen}
               >
                 Explorar
@@ -960,7 +1003,7 @@ export default function ElectoralMapGoogle() {
                   )}
 
                   {!exploreLoading &&
-                    exploreItems.map((item, i) => (
+                    exploreItems.map((item, index) => (
                       <button
                         key={item.id}
                         type="button"
@@ -976,9 +1019,9 @@ export default function ElectoralMapGoogle() {
                         ) : (
                           <span
                             className={`${styles.exploreCardFallback} ${
-                              i % 3 === 0
+                              index % 3 === 0
                                 ? styles.exploreFallbackA
-                                : i % 3 === 1
+                                : index % 3 === 1
                                   ? styles.exploreFallbackB
                                   : styles.exploreFallbackC
                             }`}
@@ -1019,7 +1062,6 @@ export default function ElectoralMapGoogle() {
           </div>
         )}
 
-        {/* Status bar */}
         <div className={styles.statusBar}>
           <div className={dataError ? styles.statusDotRed : styles.statusDotGreen} />
 
