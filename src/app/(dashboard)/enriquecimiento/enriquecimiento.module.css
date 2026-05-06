@@ -1,0 +1,223 @@
+.page { padding: 28px 32px; display: flex; flex-direction: column; gap: 20px; min-height: 100%; }
+
+/* ── Header ──────────────────────────────────────────────────── */
+.header { display: flex; align-items: flex-start; justify-content: space-between; }
+.title  { font-size: 22px; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
+.subtitle { font-size: 13px; color: #64748b; }
+.headerActions { display: flex; gap: 8px; }
+.btnPrimary {
+  height: 36px; padding: 0 14px; border-radius: 8px; border: none;
+  background: #0ea5e9; color: #fff; font-family: inherit; font-size: 13px;
+  font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;
+  transition: background .14s;
+}
+.btnPrimary:hover { background: #0284c7; }
+.btnSecondary {
+  height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #e2e8f0;
+  background: #fff; color: #475569; font-family: inherit; font-size: 13px;
+  font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;
+  transition: background .14s;
+}
+.btnSecondary:hover { background: #f8fafc; }
+
+/* ── Config layout ───────────────────────────────────────────── */
+.configLayout { display: grid; grid-template-columns: 380px 1fr; gap: 20px; align-items: start; }
+@media (max-width: 900px) { .configLayout { grid-template-columns: 1fr; } }
+
+.configPanel { display: flex; flex-direction: column; gap: 16px; }
+
+.card {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+  padding: 18px; display: flex; flex-direction: column; gap: 16px;
+}
+.cardHead { display: flex; align-items: center; gap: 12px; }
+.cardIcon {
+  width: 36px; height: 36px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.cardTitle { font-size: 14px; font-weight: 600; color: #0f172a; }
+.cardSub   { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+/* Source options */
+.sourceOptions { display: flex; flex-direction: column; gap: 8px; }
+.sourceOption {
+  display: flex; align-items: center; gap: 10px; padding: 12px;
+  border: 1.5px solid #e2e8f0; border-radius: 9px; cursor: pointer;
+  transition: border-color .14s, background .14s;
+}
+.sourceOption:hover { border-color: #cbd5e1; background: #f8fafc; }
+.sourceOptionActive { border-color: #0ea5e9 !important; background: #f0f9ff !important; }
+.sourceOption input { accent-color: #0ea5e9; flex-shrink: 0; }
+.sourceContent { flex: 1; }
+.sourceName { font-size: 13px; font-weight: 500; color: #0f172a; }
+.sourceSub  { font-size: 11px; color: #64748b; margin-top: 2px; }
+.sourceBadge { font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+
+.tokenWrap { display: flex; flex-direction: column; gap: 6px; }
+.tokenLabel { font-size: 12px; font-weight: 500; color: #475569; display: flex; justify-content: space-between; }
+.tokenLink  { color: #0ea5e9; text-decoration: none; font-weight: 500; }
+.tokenInput {
+  height: 34px; padding: 0 10px; border: 1px solid #e2e8f0; border-radius: 7px;
+  font-family: monospace; font-size: 12px; color: #0f172a; outline: none;
+  transition: border-color .14s;
+}
+.tokenInput:focus { border-color: #0ea5e9; }
+
+/* Algo list */
+.algoList { display: flex; flex-direction: column; gap: 10px; }
+.algoItem { display: flex; align-items: flex-start; gap: 10px; }
+.algoIcon { font-size: 14px; font-weight: 700; width: 20px; text-align: center; flex-shrink: 0; margin-top: 1px; }
+.algoInfo { flex: 1; }
+.algoLabel { font-size: 12.5px; font-weight: 600; color: #0f172a; display: block; }
+.algoDesc  { font-size: 11px; color: #64748b; }
+.algoConf  { font-size: 12px; font-weight: 700; flex-shrink: 0; }
+
+/* Contactos panel */
+.contactosPanel {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+  overflow: hidden; display: flex; flex-direction: column;
+}
+.contactosPanelHead {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px; border-bottom: 1px solid #f1f5f9;
+}
+.selTodosBtn {
+  height: 28px; padding: 0 12px; border-radius: 6px; border: 1px solid #e2e8f0;
+  background: #fff; color: #475569; font-family: inherit; font-size: 12px;
+  cursor: pointer; transition: background .12s;
+}
+.selTodosBtn:hover { background: #f8fafc; }
+
+.contactosList { flex: 1; overflow-y: auto; max-height: 380px; }
+.contactosList::-webkit-scrollbar { width: 4px; }
+.contactosList::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 2px; }
+
+.contactoRow {
+  display: flex; align-items: center; gap: 10px; padding: 10px 18px;
+  border-bottom: 1px solid #f8fafc; cursor: pointer; transition: background .12s;
+}
+.contactoRow:hover { background: #fafbff; }
+.contactoRowSel { background: #f0f9ff !important; }
+.contactoRow input { accent-color: #0ea5e9; flex-shrink: 0; }
+.contactoInfo { flex: 1; }
+.contactoNombre { font-size: 13px; font-weight: 500; color: #0f172a; display: block; }
+.contactoSub    { font-size: 11px; color: #64748b; }
+.contactoCedula { font-size: 11px; font-family: monospace; color: #94a3b8; }
+
+.startWrap { padding: 16px 18px; border-top: 1px solid #f1f5f9; }
+.errorMsg  { font-size: 12px; color: #dc2626; margin-bottom: 8px; }
+.btnStart {
+  width: 100%; height: 42px; border-radius: 9px; border: none;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  color: #fff; font-family: inherit; font-size: 14px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 4px 14px rgba(14,165,233,.3); transition: opacity .14s;
+}
+.btnStart:hover { opacity: .92; }
+
+/* ── Procesando ──────────────────────────────────────────────── */
+.procesandoWrap { display: flex; align-items: center; justify-content: center; padding: 60px 0; }
+.procesandoCard {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
+  padding: 40px 48px; display: flex; flex-direction: column; align-items: center;
+  gap: 16px; width: 460px; max-width: 96vw; box-shadow: 0 4px 24px rgba(0,0,0,.06);
+}
+.procesandoSpinner {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 4px solid #e0f2fe; border-top-color: #0ea5e9;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.procesandoTitle { font-size: 18px; font-weight: 700; color: #0f172a; }
+.procesandoSub   { font-size: 13px; color: #64748b; text-align: center; }
+.progresoBar {
+  width: 100%; height: 8px; background: #e0f2fe; border-radius: 999px; overflow: hidden;
+}
+.progresoFill {
+  height: 100%; background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+  border-radius: 999px; transition: width .3s ease;
+}
+.progresoPct { font-size: 13px; font-weight: 600; color: #0ea5e9; }
+.procesandoSteps { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.procesandoStep {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 12.5px; color: #94a3b8; transition: color .2s;
+}
+.procesandoStepDone { color: #22c55e; }
+.procesandoStepDot {
+  width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0;
+}
+
+/* ── Resultados ──────────────────────────────────────────────── */
+.statsGrid {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+}
+@media (max-width: 1100px) { .statsGrid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px)  { .statsGrid { grid-template-columns: repeat(2, 1fr); } }
+
+.statCard {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+  padding: 14px 16px; border-top: 3px solid #e2e8f0;
+}
+.statNum   { font-size: 26px; font-weight: 800; color: #0f172a; line-height: 1.1; }
+.statLabel { font-size: 11.5px; color: #64748b; margin-top: 4px; }
+.statPct   { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+.toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.searchWrap {
+  display: flex; align-items: center; gap: 8px; flex: 1; min-width: 220px;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: 0 12px; height: 36px;
+}
+.searchInput { border: none; outline: none; font-family: inherit; font-size: 13px; color: #0f172a; flex: 1; background: transparent; }
+.searchInput::placeholder { color: #94a3b8; }
+
+.filtroMetodos { display: flex; gap: 4px; flex-wrap: wrap; }
+.filtroBtn {
+  height: 32px; padding: 0 12px; border-radius: 6px; border: 1px solid #e2e8f0;
+  background: #fff; color: #64748b; font-family: inherit; font-size: 11.5px;
+  font-weight: 500; cursor: pointer; white-space: nowrap; transition: background .12s;
+}
+.filtroBtn:hover { background: #f8fafc; }
+.filtroBtnActive { background: #0ea5e9; border-color: #0ea5e9; color: #fff; }
+
+.tableWrap {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+  overflow: auto; box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+.table { width: 100%; border-collapse: collapse; min-width: 800px; }
+.table th {
+  padding: 10px 14px; text-align: left; font-size: 10.5px; font-weight: 600;
+  letter-spacing: .06em; text-transform: uppercase; color: #94a3b8;
+  background: #f8fafc; border-bottom: 1px solid #e2e8f0; white-space: nowrap;
+}
+.table td { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-size: 13px; }
+.table tbody tr:last-child td { border-bottom: none; }
+.table tbody tr:hover td { background: #fafbff; }
+
+.mono     { font-family: 'DM Mono', monospace; font-size: 11.5px; color: #64748b; }
+.nameMain { font-size: 13px; font-weight: 500; color: #0f172a; }
+.nameSub  { font-size: 11px; color: #94a3b8; margin-top: 1px; }
+
+.puestoNombre { font-size: 13px; font-weight: 500; color: #0f172a; }
+.sinPuesto    { font-size: 12px; color: #ef4444; font-style: italic; }
+
+.metodoBadge {
+  display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px;
+  border-radius: 999px; font-size: 11.5px; font-weight: 500; white-space: nowrap;
+}
+.metodoIcon { font-size: 11px; font-weight: 700; }
+
+.confianzaWrap { display: flex; align-items: center; gap: 8px; }
+.confianzaBar  { flex: 1; height: 6px; background: #f1f5f9; border-radius: 999px; overflow: hidden; min-width: 60px; }
+.confianzaFill { height: 100%; border-radius: 999px; transition: width .3s; }
+.confianzaPct  { font-size: 11.5px; font-weight: 600; color: #475569; min-width: 32px; text-align: right; }
+
+.empty { padding: 40px; text-align: center; color: #94a3b8; font-size: 13px; }
+
+.saveInfo {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: #475569; padding: 12px 16px;
+  background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 9px;
+}
+.saveLink { color: #0ea5e9; text-decoration: none; font-weight: 500; margin-left: 4px; }

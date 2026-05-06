@@ -1,0 +1,386 @@
+/* ═══════════════════════════════════════════════════════════════
+   ELECTORAL MAP GOOGLE — vive dentro del DashboardShell.content
+   NO usa 100vw/100vh propios — ocupa el 100% del área de contenido
+═══════════════════════════════════════════════════════════════ */
+
+/* Contenedor raíz — ocupa todo el espacio que le da el shell */
+.mapContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #f1f5f9;
+  font-family: "DM Sans", system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+}
+
+/* ── Barra flotante superior ─────────────────────────────────── */
+.mapTopbar {
+  height: 48px;
+  min-height: 48px;
+  width: 100%;
+  background: #fff;
+  border-bottom: 1px solid #e7e5e4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  z-index: 80;
+  flex-shrink: 0;
+}
+
+.pointsChip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.pointsChip strong { color: #0ea5e9; font-weight: 700; }
+
+.statusDotGreen {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+}
+
+.searchWrap { flex: 1; min-width: 0; max-width: 360px; }
+
+/* Botón Agregar — azul primario */
+.addBtn {
+  height: 32px; padding: 0 14px;
+  background: #0ea5e9; color: #fff;
+  border: none; border-radius: 6px;
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  white-space: nowrap; flex-shrink: 0;
+  transition: background .14s;
+}
+.addBtn:hover { background: #0284c7; }
+
+/* Botón Navegar */
+.navBtn {
+  height: 32px; padding: 0 12px;
+  background: #fff; color: #475569;
+  border: 1px solid #e2e8f0; border-radius: 6px;
+  font-size: 12px; font-weight: 500; font-family: inherit;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  white-space: nowrap; flex-shrink: 0;
+  transition: background .14s, border-color .14s;
+}
+.navBtn:hover { background: #f8fafc; border-color: #cbd5e1; }
+
+/* Filtros */
+.filterWrapper { position: relative; flex-shrink: 0; }
+.filterBtn {
+  height: 32px; padding: 0 12px;
+  background: #fff; color: #475569;
+  border: 1px solid #e2e8f0; border-radius: 6px;
+  font-size: 12px; font-weight: 500; font-family: inherit;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  white-space: nowrap; transition: background .14s, border-color .14s;
+  position: relative;
+}
+.filterBtn:hover { background: #f8fafc; border-color: #cbd5e1; }
+.filterBtnActive { border-color: #0ea5e9; color: #0284c7; background: #f0f9ff; }
+.filterDot {
+  width: 6px; height: 6px;
+  border-radius: 50%; background: #0ea5e9;
+  position: absolute; top: 6px; right: 6px;
+}
+
+.filterDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 280px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
+  z-index: 200;
+  overflow: hidden;
+}
+.filterGroup { padding: 12px 14px; border-bottom: 1px solid #f1f5f9; }
+.filterGroup:last-of-type { border-bottom: none; }
+.filterLabel {
+  display: block;
+  font-size: 10px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: #94a3b8; margin-bottom: 8px;
+}
+.categoryList { display: flex; flex-wrap: wrap; gap: 5px; }
+.catChip {
+  height: 26px; padding: 0 10px;
+  border-radius: 20px; border: 1px solid #e2e8f0;
+  background: #fff; color: #475569;
+  font-size: 11px; font-weight: 500; font-family: inherit;
+  cursor: pointer; display: flex; align-items: center; gap: 5px;
+  transition: background .12s, border-color .12s;
+}
+.catChip:hover { background: #f8fafc; border-color: #cbd5e1; }
+.catChipActive { background: #f0f9ff; border-color: #0ea5e9; color: #0284c7; font-weight: 600; }
+.catDot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.filterSelect {
+  width: 100%; height: 32px; padding: 0 8px;
+  border: 1px solid #e2e8f0; border-radius: 6px;
+  background: #fff; color: #334155;
+  font-size: 12px; font-family: inherit;
+  cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+  padding-right: 28px;
+}
+.filterFooter {
+  display: flex; gap: 8px; padding: 10px 14px;
+  background: #f8fafc; border-top: 1px solid #f1f5f9;
+}
+.clearFilters {
+  flex: 1; height: 30px; border-radius: 5px;
+  background: #fff; color: #64748b;
+  border: 1px solid #e2e8f0; font-family: inherit;
+  font-size: 11px; font-weight: 500; cursor: pointer;
+  transition: background .12s;
+}
+.clearFilters:hover { background: #f1f5f9; }
+.applyFilters {
+  flex: 1; height: 30px; border-radius: 5px;
+  background: #0ea5e9; color: #fff; border: none;
+  font-family: inherit; font-size: 11px; font-weight: 600;
+  cursor: pointer; transition: background .14s;
+}
+.applyFilters:hover { background: #0284c7; }
+
+/* Tipo de mapa */
+.mapTypeBtns {
+  height: 34px; padding: 3px; display: flex; align-items: center; gap: 2px;
+  background: #f1f5f9; border-radius: 7px; border: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+.mapTypeBtn {
+  height: 28px; min-width: 64px; padding: 0 10px; border: none; border-radius: 5px;
+  background: transparent; color: #64748b; font-size: 11.5px; font-weight: 600;
+  font-family: inherit; cursor: pointer; transition: background .14s, color .14s;
+  white-space: nowrap;
+}
+.mapTypeBtn:hover { background: rgba(30,41,59,.06); color: #1e293b; }
+.mapTypeBtnActive { background: #fff !important; color: #1e293b !important; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+
+/* ── Área del mapa ──────────────────────────────────────────── */
+.mapArea {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.mapDiv { width: 100%; height: 100%; }
+
+/* ── Loading ─────────────────────────────────────────────────── */
+.loadingOverlay {
+  position: absolute; inset: 0; z-index: 90;
+  background: rgba(248,250,252,.92); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; color: #334155; font-size: 13px; font-weight: 600;
+}
+.loadingSpinner {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 3px solid rgba(14,165,233,.18); border-top-color: #0ea5e9;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Bandeja Explorar ────────────────────────────────────────── */
+.exploreDock {
+  position: absolute; right: 10px; bottom: 26px; z-index: 56;
+  width: 168px; height: 44px; border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(60,64,67,.28), 0 2px 8px rgba(60,64,67,.18);
+  overflow: hidden;
+  transition: left .22s cubic-bezier(.4,0,.2,1), right .22s cubic-bezier(.4,0,.2,1),
+    width .22s cubic-bezier(.4,0,.2,1), height .22s cubic-bezier(.4,0,.2,1),
+    bottom .22s cubic-bezier(.4,0,.2,1), border-radius .22s cubic-bezier(.4,0,.2,1);
+}
+.exploreDockOpen {
+  left: 0; right: 0; bottom: 22px; width: auto; height: 212px;
+  border-radius: 0;
+  box-shadow: 0 -1px 3px rgba(60,64,67,.14), 0 -4px 14px rgba(60,64,67,.12);
+}
+.exploreDockHeader {
+  height: 44px; display: flex; align-items: center; justify-content: flex-end;
+  gap: 0; padding: 0 8px 0 4px;
+  background: #fff; border-bottom: 1px solid transparent; flex-shrink: 0;
+}
+.exploreDockOpen .exploreDockHeader { border-bottom-color: #e8eaed; }
+.explorePegmanButton {
+  width: 34px; height: 44px; border: none; background: transparent; padding: 0; margin: 0;
+  cursor: grab; display: flex; align-items: center; justify-content: center;
+  touch-action: none; user-select: none; -webkit-user-select: none; flex-shrink: 0;
+}
+.explorePegmanButton:active { cursor: grabbing; }
+.streetViewSvg {
+  display: block; pointer-events: none; width: 22px; height: 36px;
+  transform-origin: center bottom;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.26)) drop-shadow(0 2px 4px rgba(0,0,0,.14));
+  transition: transform .14s ease, filter .14s ease;
+}
+.explorePegmanButton:hover .streetViewSvg {
+  transform: scale(1.12) translateY(-3px);
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,.36)) drop-shadow(0 4px 8px rgba(0,0,0,.22));
+}
+.exploreTitleButton {
+  height: 36px; min-width: 104px; border: none; border-radius: 4px;
+  background: transparent; color: #202124; font-size: 14px; font-weight: 700;
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; cursor: pointer; padding: 0 8px; white-space: nowrap; letter-spacing: .01em;
+  transition: background .14s;
+}
+.exploreTitleButton:hover { background: #f1f3f4; }
+.exploreTitleButton svg { transition: transform .22s cubic-bezier(.4,0,.2,1); color: #5f6368; }
+.exploreArrowOpen { transform: rotate(180deg) !important; }
+.exploreContent {
+  height: calc(100% - 44px); display: flex; align-items: stretch;
+  gap: 0; padding: 12px 16px 16px; background: #fff; overflow: hidden;
+}
+.layersCard {
+  position: relative; width: 88px; min-width: 88px; height: 116px;
+  border: none; border-radius: 8px; overflow: hidden; padding: 0; cursor: pointer;
+  margin-right: 12px; flex-shrink: 0; background: #e2e8f0;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); transition: box-shadow .14s;
+}
+.layersCard:hover { box-shadow: inset 0 0 0 1px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.12); }
+.layersPreview {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 20% 30%, rgba(34,197,94,.65), transparent 38%),
+    radial-gradient(ellipse at 75% 20%, rgba(59,130,246,.5), transparent 28%),
+    radial-gradient(ellipse at 60% 70%, rgba(180,83,9,.45), transparent 30%),
+    radial-gradient(ellipse at 10% 80%, rgba(34,197,94,.4), transparent 24%),
+    linear-gradient(145deg, #94a3b8, #64748b 50%, #475569);
+  filter: saturate(1.1) brightness(.95);
+}
+.layersCard::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 45%, rgba(0,0,0,.68)); border-radius: 8px;
+}
+.layersLabel {
+  position: absolute; left: 8px; bottom: 8px; z-index: 1;
+  color: #fff; font-size: 12px; font-weight: 700;
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  text-shadow: 0 1px 3px rgba(0,0,0,.5); display: flex; align-items: center; gap: 4px;
+}
+.exploreCardsScroller {
+  min-width: 0; flex: 1; display: flex; gap: 12px;
+  overflow-x: auto; overflow-y: hidden; padding-bottom: 6px;
+  scroll-snap-type: x mandatory; scrollbar-width: thin; scrollbar-color: #9ca3af transparent;
+}
+.exploreCardsScroller::-webkit-scrollbar { height: 6px; }
+.exploreCardsScroller::-webkit-scrollbar-track { background: transparent; }
+.exploreCardsScroller::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 999px; }
+.exploreCard {
+  position: relative; width: 290px; min-width: 290px; height: 116px;
+  border: none; border-radius: 8px; overflow: hidden; padding: 0;
+  background: #e5e7eb; cursor: pointer; flex-shrink: 0; scroll-snap-align: start;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); transition: box-shadow .14s;
+}
+.exploreCard:hover { box-shadow: inset 0 0 0 1px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.12); }
+.exploreCardImage { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.exploreCardFallback { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.exploreFallbackA { background: linear-gradient(180deg, #a8c8e8 0%, #87b8d8 35%, #6898b8 36%, #b8c8a8 37%, #789868 42%, #587848 52%, #8a8a82 53%, #6a6a62 60%, #585850 100%); }
+.exploreFallbackB { background: linear-gradient(180deg, #c8d8e8 0%, #a8c4e0 32%, #88b0d8 33%, #b0c8a0 34%, #88a878 42%, #687858 52%, #828278 53%, #626258 60%, #525248 100%); }
+.exploreFallbackC { background: linear-gradient(180deg, #90c8f0 0%, #70b4e8 35%, #50a0d8 36%, #88b880 37%, #608850 42%, #487038 52%, #787870 53%, #585850 60%, #484840 100%); }
+.exploreCard::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.72)); border-radius: 8px;
+}
+.exploreCardOverlay {
+  position: absolute; left: 10px; right: 8px; bottom: 8px; z-index: 1;
+  display: flex; align-items: center; gap: 6px; color: #fff;
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+}
+.exploreCameraIcon { font-size: 12px; line-height: 1; flex-shrink: 0; opacity: .9; }
+.exploreCardTitle {
+  font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,.5); letter-spacing: .01em;
+}
+.exploreLoadingCard {
+  width: 290px; min-width: 290px; height: 116px; border-radius: 8px; background: #f1f5f9;
+  color: #94a3b8; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; flex-shrink: 0;
+}
+
+/* ── Pegman flotante ─────────────────────────────────────────── */
+.streetViewFloatingPegman {
+  position: absolute; z-index: 120; width: 40px; height: 62px;
+  border: none; background: transparent; padding: 0; margin: 0;
+  cursor: grabbing; display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,.38)) drop-shadow(0 8px 16px rgba(0,0,0,.28));
+  touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.streetViewFloatingPegman .streetViewSvg { width: 32px; height: 52px; }
+.streetViewDropHint {
+  position: absolute; left: 50%; top: 80px; transform: translateX(-50%); z-index: 121;
+  padding: 8px 16px; border-radius: 999px; background: rgba(32,33,36,.92); color: #fff;
+  font-size: 13px; font-weight: 600; font-family: "Google Sans", Roboto, Arial, sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,.28); pointer-events: none; white-space: nowrap; letter-spacing: .01em;
+}
+
+/* ── Clustering btn ─────────────────────────────────────────── */
+.clusterBtn {
+  position: absolute; left: 10px; bottom: 50px; z-index: 45;
+  height: 34px; padding: 0 12px;
+  border: 1px solid rgba(203,213,225,.9); border-radius: 4px;
+  background: #fff; color: #1a73e8;
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 600; font-family: "Google Sans", Roboto, Arial, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(60,64,67,.18), 0 4px 10px rgba(60,64,67,.12);
+  transition: background .14s, box-shadow .14s; letter-spacing: .01em;
+}
+.clusterBtn:hover { background: #f8faff; }
+.clusterBtnOn { color: #1a73e8; }
+
+/* ── Status bar ─────────────────────────────────────────────── */
+.statusBar {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 22px; z-index: 42;
+  padding: 0 12px; display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,.92); border-top: 1px solid rgba(203,213,225,.7);
+  backdrop-filter: blur(8px); color: #94a3b8;
+  font-size: 10.5px; font-weight: 600;
+  font-family: "DM Mono", ui-monospace, monospace;
+}
+.statusSep { color: #cbd5e1; }
+.statusRight { margin-left: auto; }
+
+/* ── Error ──────────────────────────────────────────────────── */
+.errorWrap {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: #f8fafc;
+}
+.errorBox {
+  width: min(520px,100%); padding: 26px; border-radius: 16px;
+  background: #fff; color: #0f172a;
+  box-shadow: 0 8px 32px rgba(0,0,0,.1); border: 1px solid #e2e8f0;
+}
+.errorIcon { display: inline-flex; font-size: 32px; margin-bottom: 10px; }
+.errorBox h3 { margin: 0 0 8px; font-size: 20px; font-weight: 800; }
+.errorBox p { margin: 0; color: #475569; line-height: 1.55; font-size: 14px; }
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .mapTypeBtns { display: none; }
+  .navBtn { display: none; }
+}
+@media (max-width: 640px) {
+  .pointsChip { display: none; }
+  .mapTopbar { padding: 0 10px; }
+}

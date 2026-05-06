@@ -1,0 +1,64 @@
+/* src/app/globals.css */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #0d111c;
+  color: #0f172a;
+}
+
+/* ─── Google Places Autocomplete override ────────────────────────────────── */
+.pac-container {
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,.12) !important;
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  margin-top: 4px !important;
+  overflow: hidden;
+}
+.pac-item {
+  padding: 8px 14px !important;
+  font-size: 12.5px !important;
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+  cursor: pointer !important;
+  border-top: none !important;
+  line-height: 1.4 !important;
+}
+.pac-item:hover, .pac-item-selected {
+  background: #f8fafc !important;
+}
+.pac-item-query {
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  color: #0f172a !important;
+  padding-right: 4px !important;
+}
+.pac-matched { font-weight: 600 !important; }
+.pac-icon { display: none !important; }
+.pac-logo::after { display: none !important; }
+
+/* ─── Google Maps info-window base ──────────────────────────────────────── */
+.gm-style .gm-style-iw-c {
+  border-radius: 10px !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,.12) !important;
+  font-family: 'DM Sans', system-ui, sans-serif !important;
+}
+.gm-style .gm-style-iw-t::after { display: none !important; }
+
+/* ─── Street View attribution ────────────────────────────────────────────── */
+.gm-svpc { display: none !important; }
+
+/* ─── Scrollbar global ───────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }

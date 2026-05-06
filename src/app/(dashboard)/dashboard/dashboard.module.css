@@ -1,0 +1,673 @@
+.page {
+  padding: 28px 32px;
+  max-width: 1440px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+/* ── Page header ── */
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pageTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #18181b;
+  margin: 0 0 3px;
+}
+
+.pageDesc {
+  font-size: 13px;
+  color: #a8a29e;
+}
+
+.pageActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.periodTabs {
+  display: flex;
+  background: #f5f5f4;
+  border-radius: 7px;
+  padding: 2px;
+  gap: 1px;
+}
+
+.periodTab {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  color: #78716c;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .12s;
+}
+
+.periodTab:hover {
+  color: #18181b;
+}
+
+.periodTabActive {
+  background: #fff;
+  color: #18181b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .1);
+}
+
+.btnPrimary {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 7px;
+  border: none;
+  background: #18181b;
+  color: #fff;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: opacity .12s;
+  white-space: nowrap;
+}
+
+.btnPrimary:hover {
+  opacity: .82;
+}
+
+.btnOutline {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 7px;
+  border: 1px solid #e7e5e4;
+  background: #fff;
+  color: #57534e;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background .12s;
+  white-space: nowrap;
+}
+
+.btnOutline:hover {
+  background: #f5f5f4;
+}
+
+/* ── Metric cards ── */
+.metricsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 1100px) {
+  .metricsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .metricsRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+.metricCard {
+  background: #fff;
+  border: 1px solid #e7e5e4;
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.metricLabel {
+  font-size: 12px;
+  color: #a8a29e;
+  font-weight: 500;
+}
+
+.metricValue {
+  font-size: 26px;
+  font-weight: 600;
+  color: #18181b;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  word-break: break-word;
+}
+
+.metricFooter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.metricDelta {
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.deltaUp {
+  color: #16a34a;
+}
+
+.deltaDown {
+  color: #dc2626;
+}
+
+.metricSub {
+  font-size: 11px;
+  color: #a8a29e;
+}
+
+/* ── Card base ── */
+.card {
+  background: #fff;
+  border: 1px solid #e7e5e4;
+  border-radius: 10px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f5f5f4;
+  gap: 12px;
+}
+
+.cardTitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #18181b;
+}
+
+.cardSub {
+  font-size: 12px;
+  color: #a8a29e;
+  margin-top: 2px;
+  line-height: 1.45;
+}
+
+.cardBody {
+  padding: 14px 20px;
+}
+
+.cardLink {
+  font-size: 12px;
+  color: #57534e;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 4px 8px;
+  border-radius: 5px;
+  transition: background .12s;
+  white-space: nowrap;
+}
+
+.cardLink:hover {
+  background: #f5f5f4;
+}
+
+/* ── Row layouts ── */
+.row2 {
+  display: flex;
+  gap: 14px;
+  min-width: 0;
+}
+
+.row2 > .card {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .row2 {
+    flex-direction: column;
+  }
+}
+
+/* ── Trend chart header right ── */
+.bigNum {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.bigNumVal {
+  font-size: 22px;
+  font-weight: 600;
+  color: #18181b;
+  font-variant-numeric: tabular-nums;
+}
+
+.bigNumDelta {
+  display: block;
+  font-size: 11.5px;
+  color: #16a34a;
+  margin-top: 2px;
+}
+
+/* ── Bar chart ── */
+.chartArea {
+  padding: 16px 20px 8px;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.barChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 140px;
+  flex: 1;
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  height: 100%;
+  min-width: 0;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  background: #e7e5e4;
+  min-height: 4px;
+  transition: background .15s;
+  cursor: pointer;
+}
+
+.bar:hover {
+  background: #a8a29e;
+}
+
+.barActive {
+  background: #18181b !important;
+}
+
+.barLabel {
+  font-size: 9.5px;
+  color: #a8a29e;
+  white-space: nowrap;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Estado rows ── */
+.estadoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-bottom: 1px solid #fafaf9;
+  gap: 12px;
+}
+
+.estadoRow:last-child {
+  border-bottom: none;
+}
+
+.estadoInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.estadoDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.estadoLabel {
+  font-size: 12.5px;
+  color: #57534e;
+  white-space: nowrap;
+}
+
+.estadoRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.estadoTrack {
+  width: 80px;
+  height: 4px;
+  background: #f5f5f4;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.estadoFill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.estadoPct {
+  font-size: 11px;
+  color: #a8a29e;
+  width: 28px;
+  text-align: right;
+}
+
+.estadoVal {
+  font-size: 12px;
+  font-weight: 600;
+  color: #18181b;
+  width: 54px;
+  text-align: right;
+  font-family: 'DM Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Municipio rows ── */
+.munRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid #fafaf9;
+}
+
+.munRow:last-child {
+  border-bottom: none;
+}
+
+.munName {
+  font-size: 12.5px;
+  color: #57534e;
+  width: 96px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.munTrack {
+  flex: 1;
+  height: 4px;
+  background: #f5f5f4;
+  border-radius: 999px;
+  overflow: hidden;
+  min-width: 50px;
+}
+
+.munFill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.munVal {
+  font-size: 12px;
+  font-weight: 600;
+  color: #18181b;
+  width: 54px;
+  text-align: right;
+  font-family: 'DM Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.munPct {
+  font-size: 11px;
+  color: #a8a29e;
+  width: 32px;
+  text-align: right;
+}
+
+/* ── Activity ── */
+.actRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #fafaf9;
+}
+
+.actRow:last-child {
+  border-bottom: none;
+}
+
+.actDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.actBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.actName {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #18181b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actAction {
+  font-size: 11.5px;
+  color: #a8a29e;
+  margin-top: 1px;
+  line-height: 1.35;
+}
+
+.actTime {
+  font-size: 11px;
+  color: #a8a29e;
+  flex-shrink: 0;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Table ── */
+.table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 9px 20px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: #a8a29e;
+  background: #fafaf9;
+  border-bottom: 1px solid #f5f5f4;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 11px 20px;
+  border-bottom: 1px solid #f5f5f4;
+  font-size: 12.5px;
+  color: #57534e;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table tbody tr:hover td {
+  background: #fafaf9;
+}
+
+.tdName {
+  font-weight: 500;
+  color: #18181b;
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tdMono {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.estadoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rowLink {
+  font-size: 12px;
+  color: #a8a29e;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all .12s;
+  white-space: nowrap;
+}
+
+.rowLink:hover {
+  background: #f5f5f4;
+  color: #18181b;
+}
+
+/* ── Estados de carga / vacío ── */
+.emptyState {
+  padding: 20px;
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ── Responsive fine tuning ── */
+@media (max-width: 768px) {
+  .page {
+    padding: 20px;
+  }
+
+  .pageHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pageActions {
+    width: 100%;
+  }
+
+  .periodTabs {
+    width: 100%;
+  }
+
+  .periodTab {
+    flex: 1;
+  }
+
+  .btnOutline,
+  .btnPrimary {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .cardHead {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bigNum {
+    text-align: left;
+  }
+
+  .estadoRight {
+    gap: 6px;
+  }
+
+  .estadoTrack {
+    width: 64px;
+  }
+
+  .munName {
+    width: 84px;
+  }
+}
+
+@media (max-width: 520px) {
+  .page {
+    padding: 16px;
+  }
+
+  .metricValue {
+    font-size: 22px;
+  }
+
+  .chartArea {
+    height: 160px;
+  }
+
+  .barChart {
+    height: 120px;
+  }
+
+  .estadoRow,
+  .munRow {
+    align-items: flex-start;
+  }
+
+  .estadoRight {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
